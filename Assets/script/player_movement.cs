@@ -27,10 +27,18 @@ public class player_movement : MonoBehaviour  //monobehaviour è associato agli o
     public Vector2 groundCheckSize = new Vector2(0.5f, 0.1f); // con il transfor possiamo sapere direttamente le dimensioni del groundCheck
     public LayerMask groundLayer; // maschera di livello, i livelli in unity si usano per le collisioni
 
+    [Header("SFX")]
+    public AudioClip jumpSFX;
+
+
+
+
+
+
     [Header("Components")]
     public Animator playerAnimator;  //peril passaggio dall'animazione  da idle a run
     public SpriteRenderer playerRenderer;
-
+    public AudioSource audioSource;
 
 
 
@@ -129,6 +137,7 @@ public class player_movement : MonoBehaviour  //monobehaviour è associato agli o
             if (context.performed) //se la barra spaziatrice è premuta fa qualcosa
             {
                 body.linearVelocityY = jumpForce; // ogni volta che premiamo la barra spaziatrice inserisce nella velocità Y inserisce la JumpForce
+                audioSource.PlayOneShot(jumpSFX);
             }
           
 
