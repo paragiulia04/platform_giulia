@@ -10,6 +10,8 @@ public class player_movement : MonoBehaviour  //monobehaviour è associato agli o
     [Header("General Setting")]
     public float playerSpeed = 10;
     public float jumpForce = 10;
+    public float wallJumpXForce = 5;
+    public float wallJumpYForce = 8;
     public Rigidbody2D body;                                           
 
 
@@ -19,7 +21,7 @@ public class player_movement : MonoBehaviour  //monobehaviour è associato agli o
     bool rightWallCollision;
 
 
-[Header("Gravity Settings")]
+   [Header("Gravity Settings")]
     public float baseGravity = 2;
     public float maxFallSpeed = 18f;
     public float wallSlideMaxFallSpeed = 9f;
@@ -59,7 +61,7 @@ public class player_movement : MonoBehaviour  //monobehaviour è associato agli o
 
 
     float HorizontalMovement = 0;
-
+    float wallJumpXSpeed = 0;
 
 
 
@@ -72,10 +74,23 @@ public class player_movement : MonoBehaviour  //monobehaviour è associato agli o
 
     public void FixedUpdate()
     {
-        body.linearVelocityX = HorizontalMovement * playerSpeed; // ora diamo al rigidbody una velocità che gestisce lui con la fisica di 10
+        body.linearVelocityX = (HorizontalMovement * playerSpeed) + wallJumpXSpeed;// ora diamo al rigidbody una velocità che gestisce lui con la fisica di 10
         GroundCheck();
         WallCheck();
-        SetGravity();  
+        SetGravity();
+
+
+        if (wallJumpXSpeed != 0)
+        wallJumpXSpeed = wallJumpXSpeed * 0.92f;
+
+        if (Mathf.Abs(wallJumpXSpeed) < 0.01)
+            wallJumpXSpeed = 0;
+
+        if(body.linearVelocityX > 0)
+            body.linearVelocityX = Mathf.Min(playerSpeed, body.linearVelocityX);
+
+        if(body.linearVelocityX < 0)
+            body.linearVelocityX = Mathf.Max(-playerSpeed, body.linearVelocityX);
 
     }
 
@@ -167,16 +182,29 @@ public class player_movement : MonoBehaviour  //monobehaviour è associato agli o
 
     public void PlayerInput_Jump(CallbackContext context) //per far saltare il player
     {
-        if (isGrounded)
+        if (context.performed)
         {
 
-            if (context.performed) //se la barra spaziatrice è premuta fa qualcosa
+            
+            if (isGrounded) 
             {
                 body.linearVelocityY = jumpForce; // ogni volta che premiamo la barra spaziatrice inserisce nella velocità Y inserisce la JumpForce
                 audioSource.PlayOneShot(jumpSFX);
             }
-          
 
+            else if(rightWallCollision)
+            {
+               wallJumpXSpeed = -wallJumpXForce;
+                body.linearVelocityY = wallJumpYForce;
+                audioSource.PlayOneShot(jumpSFX);
+            }
+
+            else if(leftWallCollision)
+            {
+               wallJumpXSpeed = wallJumpXForce;
+                body.linearVelocityY = wallJumpYForce;
+                audioSource.PlayOneShot(jumpSFX);
+            }
         }
 
         if (context.canceled && body.linearVelocityY > 0) // se la barra spaziatrice è rilasciata fa altro, è fuori dall'if perchè in base a con che forza si preme la barra va più in alto anche in aria e non solo quando è a terra(dentro l'if) && e quando è in salita dimezza la velocità
