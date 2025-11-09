@@ -10,22 +10,36 @@ public class player_movement : MonoBehaviour  //monobehaviour è associato agli o
     [Header("General Setting")]
     public float playerSpeed = 10;
     public float jumpForce = 10;
-    public Rigidbody2D body;
+    public Rigidbody2D body;                                           
 
 
     // per il salto:
-    bool isGrounded; // variabile per verificare che il player salti solo quando tocca la terra
+    bool isGrounded; // variabile per verificare che il player salti solo quando tocca la terra         // se una variabile bool è cosi senza scritta niente di default è falsa
+    bool leftWallCollision; //variabile per verificare che il player sia vicino al muro
+    bool rightWallCollision;
 
 
-    [Header("Gravity Settings")]
+[Header("Gravity Settings")]
     public float baseGravity = 2;
     public float maxFallSpeed = 18f;
+    public float wallSlideMaxFallSpeed = 9f;
     public float fallSpeedMultipler = 2f;
 
     [Header("GroundCheck")]
     public Transform groundCheckTransform;
     public Vector2 groundCheckSize = new Vector2(0.5f, 0.1f); // con il transfor possiamo sapere direttamente le dimensioni del groundCheck
     public LayerMask groundLayer; // maschera di livello, i livelli in unity si usano per le collisioni
+
+    [Header("WallCheck")]          // è il groundcheck ma copiato e chiamato wall al posto di ground, ci serve per verificare una collisione di fianco al muro
+    public Transform leftWallCheckTransform;   // è più pulito creare due wall check uno per destra e uno per sinistra
+    public Transform rightWallCheckTransform;
+    public Vector2 WallCheckSize = new Vector2(0.5f, 0.1f); // con il transfor possiamo sapere direttamente le dimensioni del groundCheck
+    public LayerMask WallLayer; // maschera di livello, i livelli in unity si usano per le collisioni
+
+
+
+
+
 
     [Header("SFX")]
     public AudioClip jumpSFX;
@@ -60,7 +74,9 @@ public class player_movement : MonoBehaviour  //monobehaviour è associato agli o
     {
         body.linearVelocityX = HorizontalMovement * playerSpeed; // ora diamo al rigidbody una velocità che gestisce lui con la fisica di 10
         GroundCheck();
+        WallCheck();
         SetGravity();  
+
     }
 
 
@@ -83,14 +99,14 @@ public class player_movement : MonoBehaviour  //monobehaviour è associato agli o
 
 
 
-
+       
 
     }
 
 
 
     
-
+    //max prende il massimo tra 2 valori
 
 
 
@@ -99,8 +115,13 @@ public class player_movement : MonoBehaviour  //monobehaviour è associato agli o
     {
         if(body.linearVelocityY < 0)
         {
-            body.gravityScale = baseGravity * fallSpeedMultipler;
-            body.linearVelocityY = Mathf.Max(body.linearVelocityY, -maxFallSpeed);
+            body.gravityScale = baseGravity * fallSpeedMultipler;                    
+
+            if(leftWallCollision || rightWallCollision)
+                body.linearVelocityY = Mathf.Max(body.linearVelocityY, -wallSlideMaxFallSpeed); //rallenta quando scende da un muro
+            else
+
+                body.linearVelocityY = Mathf.Max(body.linearVelocityY, -maxFallSpeed);
         }
         else
         {
@@ -119,6 +140,21 @@ public class player_movement : MonoBehaviour  //monobehaviour è associato agli o
             isGrounded = false;  //  altrimenti non collide ed è in aria   
     
     }
+
+    public void WallCheck()  //per verificare se il player è attaccato al muro
+    {
+        if (Physics2D.OverlapBox(rightWallCheckTransform.position, WallCheckSize, 0, WallLayer)) 
+            rightWallCollision = true; // è attaccato al muro
+        else
+           rightWallCollision = false;  //  non è attaccato al muro
+
+        if (Physics2D.OverlapBox(leftWallCheckTransform.position, WallCheckSize, 0, WallLayer))
+            leftWallCollision = true; // è attaccato al muro
+        else
+            leftWallCollision = false;  //  non è attaccato al muro
+
+    }
+
 
 
     public void PlayerInput_Move(CallbackContext context)  
@@ -153,7 +189,9 @@ public class player_movement : MonoBehaviour  //monobehaviour è associato agli o
 
     public void OnDrawGizmos()  //gizmos sono tutti i simboli di unity
     {
-        Gizmos.DrawCube(groundCheckTransform.position, groundCheckSize); 
+        Gizmos.DrawCube(groundCheckTransform.position, groundCheckSize);
+        Gizmos.DrawCube(rightWallCheckTransform.position, WallCheckSize);
+        Gizmos.DrawCube(leftWallCheckTransform.position, WallCheckSize);
     }
 
 
