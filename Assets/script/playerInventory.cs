@@ -3,7 +3,7 @@ using UnityEngine;
 public class playerInventory : MonoBehaviour
 {
     public CoinManager coinManager;
-
+     bool hasKey = false;
 
     int coins = 0; // soldi che fa il player
 
@@ -16,4 +16,17 @@ public class playerInventory : MonoBehaviour
 
 
     }
+
+    public void TakeKey()
+    {
+        hasKey = true;
+    }
+
+
+    public bool HasKey()
+    {
+        return hasKey;
+    }
+
+
 }

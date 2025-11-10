@@ -5,6 +5,7 @@ public class CoinManager : MonoBehaviour
 {
 
     public TextMeshProUGUI coinText; //riferimento per il cointext a schermo
+    
 
     public void UpdateCoinUI(int coin) //ci passa dentro i soldi che abbiamo, il metodosi occupa di aggiornare i soldi che passiamo
     {
@@ -12,7 +13,7 @@ public class CoinManager : MonoBehaviour
     }
 
 
-
+    
 
 
 }
